@@ -1,0 +1,32 @@
+/* Custom styles for the cursor and highlighting */
+.passage-char.correct {
+    color: #10B981; /* Green-500 */
+}
+.passage-char.incorrect {
+    color: #EF4444; /* Red-500 */
+    text-decoration: underline;
+}
+.passage-char.cursor {
+    background-color: #BFDBFE; /* Blue-200 */
+    border-radius: 2px;
+    animation: blink 1s step-end infinite;
+}
+@keyframes blink {
+    from, to { background-color: transparent; }
+    50% { background-color: #BFDBFE; } /* Blue-200 */
+}
+/* Ensure font consistency */
+body {
+    font-family: "Inter", sans-serif;
+}
+
+/* Star animation styles */
+.star {
+    position: fixed; /* Fixed position relative to viewport */
+    font-size: 1.5rem; /* Adjust size as needed */
+    color: gold; /* Golden color */
+    text-shadow: 0 0 5px rgba(255, 215, 0, 0.8), 0 0 10px rgba(255, 215, 0, 0.5); /* Subtle glow */
+    pointer-events: none; /* Ensure stars don't block mouse events */
+    z-index: 1000; /* Ensure stars appear on top */
+    transform: translate(-50%, -50%); /* Center the star emoji */
+}
