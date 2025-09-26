@@ -30,3 +30,19 @@ body {
     z-index: 1000; /* Ensure stars appear on top */
     transform: translate(-50%, -50%); /* Center the star emoji */
 }
+
+/* New animation for the start button */
+.blink-animation {
+    animation: button-pulse 2s infinite ease-in-out;
+}
+
+@keyframes button-pulse {
+    0%, 100% {
+        background-color: #3B82F6; /* blue-600 */
+        transform: scale(1);
+    }
+    50% {
+        background-color: #1D4ED8; /* blue-800 */
+        transform: scale(1.05);
+    }
+}
