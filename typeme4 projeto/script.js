@@ -11,7 +11,7 @@ const customTextButton = document.getElementById('custom-text-button');
 const customTextModal = document.getElementById('custom-text-modal');
 const customTextArea = document.getElementById('custom-text-area');
 const setPassageButton = document.getElementById('set-passage-button');
-const cancelCustomTextButton = document.getElementById('cancel-custom-text-button');
+const cancelCustomTextButton = document = document.getElementById('cancel-custom-text-button');
 const wpmChartCanvas = document.getElementById('wpmChart');
 const wpmChartCtx = wpmChartCanvas.getContext('2d');
 const overallAverageWpmDisplay = document.getElementById('overall-average-wpm');
@@ -20,19 +20,28 @@ const bestWpmDisplay = document.getElementById('best-wpm-display'); // New DOM e
 const generateAiButton = document.getElementById('generate-ai-button'); // New DOM element for the AI button
 const aiLoadingMessage = document.getElementById('ai-loading-message'); // New DOM element for the loading message
 
-
 // Typing Test Variables
 const bookQuotes = [
-   "A long time ago in a galaxy far, far away... It is a period of civil war. Rebel spaceships, striking from a hidden base, have won their first victory against the evil Galactic Empire. During the battle, Rebel spies managed to steal secret plans to the Empire's ultimate weapon, the DEATH STAR, a space station with enough power to destroy an entire planet."
+    "A long time ago in a galaxy far, far away... It is a period of civil war. Rebel spaceships, striking from a hidden base, have won their first victory against the evil Galactic Empire. During the battle, Rebel spies managed to steal secret plans to the Empire's ultimate weapon, the DEATH STAR, a space station with enough power to destroy an entire planet."
 ];
 
-// New AI-generated passages array
-const aiPassages = [
-    "The digital realm buzzes with unseen data,\nconnections forming a vibrant, tangled web.\nIdeas travel at the speed of light,\ntransforming how we learn, work, and create.",
-    "Beneath the old library's grand, vaulted ceiling,\na lone reader finds solace in a forgotten tome.\nDust motes dance in the sunbeams that stream through the windows,\nilluminating centuries of human thought.",
-    "A symphony of city sounds echoes through the canyon,\nblending the hum of traffic with distant chatter.\nEvery street corner holds a unique story,\nwaiting to be heard by those who listen closely.",
-    "In the quiet of a winter morning, the world seems to stand still.\nSnowflakes drift silently, blanketing the ground in white.\nNature's gentle pause provides a moment for reflection,\nbefore the rhythm of life begins anew."
-];
+// Updated AI-generated passages array with more variety
+const aiPassages = {
+    beginner: [
+        "The quick brown fox jumps over the lazy dog.",
+        "A quiet day in the city brings a calm stillness.",
+        "The stars shine bright at night for everyone to see."
+    ],
+    intermediate: [
+        "The digital realm buzzes with unseen data, connections forming a vibrant, tangled web. Ideas travel at the speed of light, transforming how we learn, work, and create.",
+        "Beneath the old library's grand, vaulted ceiling, a lone reader finds solace in a forgotten tome. Dust motes dance in the sunbeams that stream through the windows, illuminating centuries of human thought.",
+        "A symphony of city sounds echoes through the canyon, blending the hum of traffic with distant chatter. Every street corner holds a unique story, waiting to be heard by those who listen closely."
+    ],
+    advanced: [
+        "In the quantum superposition of a particle, all potential states exist simultaneously until observation collapses the wave function. This fundamental principle challenges our classical understanding of reality and forms the bedrock of quantum computing.",
+        "The symbiotic relationship between mycorrhizal fungi and plant roots is a marvel of ecological cooperation, facilitating nutrient exchange and enhancing resilience across diverse biomes, a testament to the intricate ballet of life beneath our feet."
+    ]
+};
 
 let passageText;
 let startTime = null;
@@ -43,6 +52,7 @@ let correctCharactersCount = 0;
 let errorsCount = 0;
 let resultsHistory = [];
 let wpmChartInstance;
+let characterErrorMap = {}; // New variable to track character errors
 
 // Function to get a random book quote
 function getRandomBookQuote() {
@@ -53,6 +63,7 @@ function getRandomBookQuote() {
 // Function to initialize the test display
 function initializePassageDisplay() {
     passageDisplay.innerHTML = '';
+    characterErrorMap = {}; // Reset error map for new test
 
     const storedCustomPassage = localStorage.getItem('customTypingPassage');
     const isCustomTextActive = localStorage.getItem('isCustomTextActive') === 'true';
@@ -110,23 +121,19 @@ function updateTimer() {
 
 // Function to handle user input
 function handleInput(event) {
-    // New logic: If test is not active and the user types the first correct character, start the test.
     if (!testActive) {
         if (typingInput.value.length === 1 && typingInput.value[0] === passageText[0]) {
             prepareTest();
         } else if (typingInput.value.length === 1 && typingInput.value[0] !== passageText[0]) {
-            // This handles the case where the user types an incorrect first character.
-            // It prevents the timer from starting and highlights the error.
-            typingInput.value = ''; // Clear the input
+            typingInput.value = '';
             const firstCharSpan = passageDisplay.children[0];
             firstCharSpan.classList.add('incorrect');
             return;
         } else {
-            // Do nothing if the first key is incorrect or the input is empty
             return;
         }
     }
-    
+
     if (startTime === null && typingInput.value.length === 1) {
         startTime = new Date();
         timerInterval = setInterval(updateTimer, 1000);
@@ -150,6 +157,8 @@ function handleInput(event) {
                 charSpan.classList.remove('correct');
                 charSpan.classList.add('incorrect');
                 errorsCount++;
+                const incorrectChar = passageText[i];
+                characterErrorMap[incorrectChar] = (characterErrorMap[incorrectChar] || 0) + 1;
             }
         } else {
             charSpan.classList.remove('correct', 'incorrect');
@@ -215,6 +224,25 @@ function endTest() {
     }
     updateChart();
     createStarAnimation();
+    applyHeatmap(); // Apply the heatmap effect
+}
+
+// New function to apply heatmap
+function applyHeatmap() {
+    passageDisplay.innerHTML = ''; // Clear passage display
+    passageText.split('').forEach(char => {
+        const span = document.createElement('span');
+        span.textContent = char;
+        span.classList.add('passage-char');
+        // Determine heatmap class based on error frequency
+        const errorCount = characterErrorMap[char] || 0;
+        if (errorCount > 2) {
+            span.classList.add('heatmap-high');
+        } else if (errorCount > 0) {
+            span.classList.add('heatmap-low');
+        }
+        passageDisplay.appendChild(span);
+    });
 }
 
 // Function to log results to the table and save to local storage
@@ -293,7 +321,6 @@ function resetTest() {
 
 // Function to update or create the WPM chart
 function updateChart() {
-    // Sort results before updating the chart
     sortResultsByWPM();
 
     if (wpmChartInstance) {
@@ -305,14 +332,11 @@ function updateChart() {
 
     const totalWPM = wpmData.reduce((sum, wpm) => sum + wpm, 0);
     const averageWPM = wpmData.length > 0 ? (totalWPM / wpmData.length).toFixed(2) : 0;
-    
-    // Check if the history is not empty before trying to access a value
     const bestWPM = wpmData.length > 0 ? wpmData[0] : 0;
 
     overallAverageWpmDisplay.textContent = wpmData.length > 0 ? `(Avg: ${averageWPM} WPM)` : '';
     bestWpmDisplay.textContent = wpmData.length > 0 ? `(Best: ${bestWPM} WPM)` : '';
 
-    // Clear and repopulate the table with the newly sorted data
     resultsTableBody.innerHTML = '';
     resultsHistory.forEach(result => addResultToTable(result));
 
@@ -384,16 +408,26 @@ function updateChart() {
     });
 }
 
-// Function to simulate AI passage generation
+// Function to generate an AI passage
 async function generateAiPassage() {
     aiLoadingMessage.classList.remove('hidden');
     generateAiButton.disabled = true;
 
-    // Simulate an API call delay
-    await new Promise(resolve => setTimeout(resolve, 1500)); 
+    // Determine difficulty based on user's best WPM
+    const bestWPM = resultsHistory.length > 0 ? resultsHistory[0].wpm : 0;
+    let difficulty = 'beginner';
+    if (bestWPM >= 40 && bestWPM < 70) {
+        difficulty = 'intermediate';
+    } else if (bestWPM >= 70) {
+        difficulty = 'advanced';
+    }
 
-    const randomIndex = Math.floor(Math.random() * aiPassages.length);
-    const newPassage = aiPassages[randomIndex];
+    // Simulate an API call delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    const passages = aiPassages[difficulty];
+    const randomIndex = Math.floor(Math.random() * passages.length);
+    const newPassage = passages[randomIndex];
 
     passageText = newPassage;
     localStorage.setItem('customTypingPassage', newPassage);
@@ -447,16 +481,9 @@ function createStarAnimation() {
 
 // Function to delete the entire typing history
 function deleteHistory() {
-    // Clear the resultsHistory array in memory
     resultsHistory = [];
-
-    // Clear the data from local storage
     localStorage.removeItem('typingTestResults');
-
-    // Clear the table body
     resultsTableBody.innerHTML = '';
-
-    // Update the chart and overall average display
     updateChart();
 }
 
