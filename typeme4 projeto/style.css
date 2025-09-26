@@ -46,3 +46,15 @@ body {
         transform: scale(1.05);
     }
 }
+
+/* Heatmap styles for character analysis */
+.passage-char.heatmap-low {
+    background-color: rgba(255, 100, 100, 0.3); /* Light red for a few errors */
+    border-radius: 2px;
+    padding: 1px;
+}
+.passage-char.heatmap-high {
+    background-color: rgba(255, 0, 0, 0.6); /* Darker red for many errors */
+    border-radius: 2px;
+    padding: 1px;
+}
