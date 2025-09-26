@@ -87,6 +87,7 @@ function prepareTest() {
     typingInput.disabled = false;
     typingInput.focus();
     startButton.disabled = true;
+    startButton.classList.remove('blink-animation');
     customTextButton.disabled = true;
     generateAiButton.disabled = true; // Disable the new button during the test
 
@@ -108,11 +109,24 @@ function updateTimer() {
 }
 
 // Function to handle user input
-function handleInput() {
+function handleInput(event) {
+    // New logic: If test is not active and the user types the first correct character, start the test.
     if (!testActive) {
-        return;
+        if (typingInput.value.length === 1 && typingInput.value[0] === passageText[0]) {
+            prepareTest();
+        } else if (typingInput.value.length === 1 && typingInput.value[0] !== passageText[0]) {
+            // This handles the case where the user types an incorrect first character.
+            // It prevents the timer from starting and highlights the error.
+            typingInput.value = ''; // Clear the input
+            const firstCharSpan = passageDisplay.children[0];
+            firstCharSpan.classList.add('incorrect');
+            return;
+        } else {
+            // Do nothing if the first key is incorrect or the input is empty
+            return;
+        }
     }
-
+    
     if (startTime === null && typingInput.value.length === 1) {
         startTime = new Date();
         timerInterval = setInterval(updateTimer, 1000);
@@ -185,6 +199,7 @@ function endTest() {
     timerInterval = null;
     typingInput.disabled = true;
     startButton.disabled = false;
+    startButton.classList.add('blink-animation');
     customTextButton.disabled = false;
     generateAiButton.disabled = false; // Re-enable the AI button
 
@@ -260,6 +275,7 @@ function resetTestStateAndDisplay() {
     wpmDisplay.textContent = '0';
     accuracyDisplay.textContent = '0%';
     startButton.disabled = false;
+    startButton.classList.add('blink-animation');
     customTextButton.disabled = false;
     generateAiButton.disabled = false; // Re-enable the AI button on reset
     initializePassageDisplay();
@@ -482,6 +498,7 @@ window.onload = function() {
     initializePassageDisplay();
     loadResults();
     updateChart();
+    startButton.classList.add('blink-animation');
 };
 
 window.addEventListener('beforeunload', () => {
