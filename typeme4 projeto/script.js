@@ -19,6 +19,8 @@ const deleteHistoryButton = document.getElementById('delete-history-button'); //
 const bestWpmDisplay = document.getElementById('best-wpm-display'); // New DOM element for the best WPM display
 const generateAiButton = document.getElementById('generate-ai-button'); // New DOM element for the AI button
 const aiLoadingMessage = document.getElementById('ai-loading-message'); // New DOM element for the loading message
+const pointsDisplay = document.getElementById('points-display'); // New DOM element for the points display
+
 
 // Typing Test Variables
 const bookQuotes = [
@@ -30,16 +32,29 @@ const aiPassages = {
     beginner: [
         "The quick brown fox jumps over the lazy dog.",
         "A quiet day in the city brings a calm stillness.",
-        "The stars shine bright at night for everyone to see."
+        "The stars shine bright at night for everyone to see.",
+        "The old clock on the wall ticks slowly, marking the passing moments.",
+        "A small boat floats gently on the still, blue lake.",
+        "The red balloon drifted high above the green trees and tall buildings.",
+        "A friendly dog wags its tail while playing in a grassy park."
     ],
     intermediate: [
         "The digital realm buzzes with unseen data, connections forming a vibrant, tangled web. Ideas travel at the speed of light, transforming how we learn, work, and create.",
         "Beneath the old library's grand, vaulted ceiling, a lone reader finds solace in a forgotten tome. Dust motes dance in the sunbeams that stream through the windows, illuminating centuries of human thought.",
-        "A symphony of city sounds echoes through the canyon, blending the hum of traffic with distant chatter. Every street corner holds a unique story, waiting to be heard by those who listen closely."
+        "A symphony of city sounds echoes through the canyon, blending the hum of traffic with distant chatter. Every street corner holds a unique story, waiting to be heard by those who listen closely.",
+        "The ancient forest whispered secrets to the wind, its colossal trees standing as silent guardians of a forgotten era. Sunlight filtered through the dense canopy, dappling the mossy ground below.",
+        "A culinary masterpiece is not merely a dish, but a story told through flavors and textures. Each ingredient plays a crucial role, contributing to a symphony of taste that delights the senses.",
+        "In the vastness of space, a lone satellite orbits a distant planet, a tiny sentinel sending back data about the cosmic wonders it observes. Its journey is a testament to human curiosity and ingenuity.",
+        "The rhythmic sound of waves crashing against the shore creates a meditative soundtrack, inviting visitors to pause and reflect. The ocean, with its endless ebb and flow, holds a timeless power.",
+        "An intricate network of nerves and neurons works tirelessly, processing a continuous stream of information to help us navigate the world. This biological supercomputer governs our thoughts, feelings, and actions."
     ],
     advanced: [
         "In the quantum superposition of a particle, all potential states exist simultaneously until observation collapses the wave function. This fundamental principle challenges our classical understanding of reality and forms the bedrock of quantum computing.",
-        "The symbiotic relationship between mycorrhizal fungi and plant roots is a marvel of ecological cooperation, facilitating nutrient exchange and enhancing resilience across diverse biomes, a testament to the intricate ballet of life beneath our feet."
+        "The symbiotic relationship between mycorrhizal fungi and plant roots is a marvel of ecological cooperation, facilitating nutrient exchange and enhancing resilience across diverse biomes, a testament to the intricate ballet of life beneath our feet.",
+        "The late-stage baroque period, characterized by its dramatic intensity and emotional fervor, saw the development of complex counterpoint and elaborate ornamentation, culminating in the monumental works of composers like Bach and Handel.",
+        "Neuroplasticity, the brain's remarkable ability to reorganize itself by forming new neural connections throughout life, is a cornerstone of learning and memory. This adaptability allows us to recover from injury and acquire new skills.",
+        "The philosophical concept of phenomenalism posits that physical objects do not exist independently of our sensory experience of them. This view asserts that to be is to be perceived, reducing reality to a collection of sense-data.",
+        "From a macro-economic perspective, the intricate dance between fiscal policy and monetary policy is critical for maintaining stability and fostering growth. Governments and central banks must coordinate their efforts to manage inflation and unemployment."
     ]
 };
 
@@ -53,6 +68,7 @@ let errorsCount = 0;
 let resultsHistory = [];
 let wpmChartInstance;
 let characterErrorMap = {}; // New variable to track character errors
+let userPoints = 0; // New variable for gamification
 
 // Function to get a random book quote
 function getRandomBookQuote() {
@@ -222,6 +238,13 @@ function endTest() {
     if (passageChars.length > 0) {
         passageChars[passageText.length - 1].classList.remove('cursor');
     }
+
+    // New gamification logic - points only
+    const pointsEarned = Math.round(finalWPM * (finalAccuracy / 100) * 10);
+    userPoints += pointsEarned;
+    localStorage.setItem('userPoints', userPoints);
+    pointsDisplay.textContent = userPoints;
+
     updateChart();
     createStarAnimation();
     applyHeatmap(); // Apply the heatmap effect
@@ -284,6 +307,11 @@ function loadResults() {
         resultsTableBody.innerHTML = '';
         resultsHistory.forEach(result => addResultToTable(result));
     }
+    const storedPoints = localStorage.getItem('userPoints');
+    if (storedPoints) {
+        userPoints = parseInt(storedPoints);
+        pointsDisplay.textContent = userPoints;
+    }
 }
 
 // Function to sort results by WPM in descending order
@@ -310,10 +338,13 @@ function resetTestStateAndDisplay() {
     updateChart();
 }
 
-// Function to reset the test completely (including clearing custom text)
+// Function to reset the test completely (including clearing custom text and progress)
 function resetTest() {
     localStorage.removeItem('customTypingPassage');
     localStorage.removeItem('isCustomTextActive');
+    localStorage.removeItem('userPoints');
+    userPoints = 0;
+    pointsDisplay.textContent = userPoints;
     typingInput.dataset.customTextSet = '';
 
     resetTestStateAndDisplay();
